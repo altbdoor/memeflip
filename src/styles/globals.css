@@ -1,1 +1,5 @@
 @import "bootstrap/dist/css/bootstrap.css";
+
+.meme-img__canvas {
+  max-width: 100%;
+}
