@@ -1,5 +1,6 @@
 import { CanvasPreview } from "@/components/CanvasPreview";
 import { LoadImage } from "@/components/LoadImage";
+import { TextFields } from "@/components/TextFields";
 import Head from "next/head";
 import { useState } from "react";
 
@@ -39,6 +40,7 @@ export default function Home() {
         <div className="col-md-6">
           <div className="mb-2 fw-bold">Upload image</div>
           <LoadImage onUrlReady={setBaseImgFromUrl} />
+          <TextFields />
           <hr />
         </div>
       </div>

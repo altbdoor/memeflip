@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { snapdom } from "@zumer/snapdom";
+import { useRef } from "react";
 
 interface CanvasPreviewProps {
   isLoading: boolean;
@@ -6,60 +7,42 @@ interface CanvasPreviewProps {
 }
 
 export function CanvasPreview({ image, ...props }: CanvasPreviewProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const baseRotateRef = useRef(0);
-
-  useEffect(() => {
-    if (image) {
-      const canvas = canvasRef.current!;
-      const ctx = canvas.getContext("2d")!;
-
-      canvas.width = image.width;
-      canvas.height = image.height;
-      ctx.drawImage(image, 0, 0);
-    }
-  }, [image]);
+  const canvasContainer = useRef<HTMLDivElement>(null);
 
   const rotateCanvas = () => {
-    if (!image) {
+    alert("WIP");
+  };
+
+  const testRender = async () => {
+    if (!canvasContainer.current) {
       return;
     }
 
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext("2d")!;
-    const nextRotate = (baseRotateRef.current + 90) % 360;
-    baseRotateRef.current = nextRotate;
+    // readjust to existing width
+    const dpr = window.devicePixelRatio || 1;
+    const fixedWidth = image?.width ? image.width / dpr : undefined;
 
-    const isSwapped = nextRotate % 180 !== 0;
-    canvas.width = isSwapped ? image.height : image.width;
-    canvas.height = isSwapped ? image.width : image.height;
+    const snapImg = await snapdom.toCanvas(canvasContainer.current, {
+      dpr,
+      width: fixedWidth,
+    });
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
+    const blob = await new Promise<Blob | null>((resolve) => {
+      snapImg.toBlob(resolve, "image/jpeg", 0.95);
+    });
 
-    switch (nextRotate) {
-      case 90:
-        ctx.translate(canvas.width, 0);
-        ctx.rotate(Math.PI / 2);
-        break;
-
-      case 180:
-        ctx.translate(canvas.width, canvas.height);
-        ctx.rotate(Math.PI);
-        break;
-
-      case 270:
-        ctx.translate(0, canvas.height);
-        ctx.rotate((3 * Math.PI) / 2);
-        break;
+    if (!blob) {
+      alert("Unable to render");
+      return;
     }
 
-    ctx.drawImage(image, 0, 0);
-    ctx.restore();
+    const url = URL.createObjectURL(blob);
+    window.open(url);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="position-relative">
+    <div>
       <div className="mb-2 text-end">
         <button
           type="button"
@@ -70,14 +53,39 @@ export function CanvasPreview({ image, ...props }: CanvasPreviewProps) {
         </button>
       </div>
 
-      <div className="d-flex flex-column justify-content-center">
+      <div className="d-flex flex-column justify-content-center shadow">
         {props.isLoading && <h5 className="text-center">Loading image...</h5>}
 
-        <canvas
-          ref={canvasRef}
-          className="meme-img__canvas h-auto border border-primary"
-        ></canvas>
+        <div
+          className="position-relative overflow-hidden"
+          ref={canvasContainer}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={image?.src}
+            alt="base image"
+            className="d-block w-100 h-auto"
+          />
+
+          <div
+            contentEditable
+            style={{
+              position: "absolute",
+              top: 20,
+              left: 200,
+              fontSize: 32,
+              textShadow: "0 0 3px #000",
+              resize: "both",
+            }}
+          >
+            asd
+          </div>
+        </div>
       </div>
+
+      <button type="button" onClick={testRender}>
+        render
+      </button>
     </div>
   );
 }

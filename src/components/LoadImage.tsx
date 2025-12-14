@@ -75,12 +75,18 @@ export function LoadImage(props: LoadImageProps) {
     <>
       {topMemes.length > 0 && (
         <div className="mb-2 overflow-x-auto">
-          <div className="d-flex flex-row gap-2 flex-nowrap">
+          <div className="d-flex flex-row gap-1 flex-nowrap">
             {topMemes.map((meme) => (
-              <a key={meme.id} href="#" onClick={handleClickTopMeme(meme.url)}>
+              <a
+                key={meme.id}
+                href="#"
+                onClick={handleClickTopMeme(meme.url)}
+                className="border"
+                title={meme.name}
+              >
                 <Image
                   src={meme.previewUrl}
-                  alt={meme.id}
+                  alt={meme.name}
                   width={50}
                   height={50}
                 />
