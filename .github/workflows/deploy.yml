@@ -37,6 +37,7 @@ jobs:
           npm run build
         env:
           PAGES_BASE_PATH: ${{ steps.setup_pages.outputs.base_path }}
+          NEXT_TELEMETRY_DISABLED: "1"
 
       - uses: actions/upload-pages-artifact@v3
         with:
