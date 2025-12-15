@@ -2,7 +2,10 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 
-const basePath = process.env.PAGES_BASE_PATH ?? "";
+let basePath = process.env.PAGES_BASE_PATH ?? "";
+if (basePath.endsWith("/")) {
+  basePath = basePath.slice(0, -1);
+}
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
