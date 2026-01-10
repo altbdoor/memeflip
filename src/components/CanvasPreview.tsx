@@ -1,5 +1,8 @@
 import { snapdom } from "@zumer/snapdom";
 import { useRef } from "react";
+import { useFonts } from "@/contexts/FontContext";
+import { useTextFields } from "@/contexts/TextFieldsContext";
+import { Rnd } from "react-rnd";
 
 interface CanvasPreviewProps {
   isLoading: boolean;
@@ -13,10 +16,15 @@ export function CanvasPreview({ image, ...props }: CanvasPreviewProps) {
     alert("WIP");
   };
 
+  const fonts = useFonts();
+  const { fields, updateField } = useTextFields();
+
   const testRender = async () => {
     if (!canvasContainer.current) {
       return;
     }
+
+    canvasContainer.current.classList.add("meme--rendering");
 
     // readjust to existing width
     const dpr = window.devicePixelRatio || 1;
@@ -25,11 +33,15 @@ export function CanvasPreview({ image, ...props }: CanvasPreviewProps) {
     const snapImg = await snapdom.toCanvas(canvasContainer.current, {
       dpr,
       width: fixedWidth,
+      embedFonts: true,
+      localFonts: fonts,
     });
 
     const blob = await new Promise<Blob | null>((resolve) => {
       snapImg.toBlob(resolve, "image/jpeg", 0.95);
     });
+
+    canvasContainer.current.classList.remove("meme--rendering");
 
     if (!blob) {
       alert("Unable to render");
@@ -43,10 +55,12 @@ export function CanvasPreview({ image, ...props }: CanvasPreviewProps) {
 
   return (
     <div>
-      <div className="mb-2 text-end">
+      <div className="mb-2 d-flex align-items-center">
+        {props.isLoading && <b>Loading image...</b>}
+
         <button
           type="button"
-          className="btn btn-outline-secondary btn-sm"
+          className="btn btn-outline-secondary btn-sm ms-auto"
           onClick={rotateCanvas}
         >
           Rotate
@@ -54,8 +68,6 @@ export function CanvasPreview({ image, ...props }: CanvasPreviewProps) {
       </div>
 
       <div className="d-flex flex-column justify-content-center shadow">
-        {props.isLoading && <h5 className="text-center">Loading image...</h5>}
-
         <div
           className="position-relative overflow-hidden"
           ref={canvasContainer}
@@ -67,19 +79,31 @@ export function CanvasPreview({ image, ...props }: CanvasPreviewProps) {
             className="d-block w-100 h-auto"
           />
 
-          <div
-            contentEditable
-            style={{
-              position: "absolute",
-              top: 20,
-              left: 200,
-              fontSize: 32,
-              textShadow: "0 0 3px #000",
-              resize: "both",
-            }}
-          >
-            asd
-          </div>
+          {fields.map((field) => (
+            <Rnd
+              key={field.id}
+              size={{ width: field.width, height: field.height }}
+              position={{ x: field.x, y: field.y }}
+              onDragStop={(e, d) => {
+                updateField(field.id, { x: d.x, y: d.y });
+              }}
+              bounds="parent"
+              enableResizing={false}
+            >
+              <div
+                className="meme__text"
+                style={{
+                  fontFamily: "Anton",
+                  fontSize: 64,
+                  color: field.textColor,
+                  WebkitTextStroke: `10px ${field.outlineColor}`,
+                  paintOrder: "stroke fill",
+                }}
+              >
+                {field.text}
+              </div>
+            </Rnd>
+          ))}
         </div>
       </div>
 

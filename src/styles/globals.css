@@ -1,5 +1,13 @@
 @import "bootstrap/dist/css/bootstrap.css";
 
-.meme-img__canvas {
-  max-width: 100%;
+.meme__text {
+  font-family: "Anton", sans-serif;
+  position: absolute;
+  paint-order: stroke fill;
+  outline: 4px dashed rgba(255, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+.meme--rendering .meme__text {
+  outline: none;
 }
